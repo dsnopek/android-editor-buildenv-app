@@ -1,8 +1,19 @@
 TODO
 ====
 
-- Get a gradle build running in some form or fashion
-  - Can we get more frequent writing to the log with progress as it runs?
+- Get Gradle build running to completion
+  - Detect and solve the AAPT thing
+- We should bind the whole shared Documents directory, not just the given project (so other stuff can be found)
+- Godot: Show better progress to the user
+  - Popup the window and show output
+    - Should we combine stdout and stderr? My inclination is "yes"
+  - Have a way to cancel the build
+    - We probably need to do better with threads?
+  - Only return control to the user when the build has finished or been canceled
+- Godot: Clean up
+  - Make separate class/object for the Gradle bits
+  - Remove the old Termux bits
+- Figure out which Termux fork we need (and update build system to use it)
 
 Notes:
 
