@@ -1,6 +1,7 @@
 package org.godotengine.godot_gradle_build_environment
 
 import android.content.Context
+import android.os.Environment
 import android.util.Log
 import java.io.BufferedReader
 import java.io.File
@@ -150,7 +151,7 @@ class BuildEnvironment(
             gradleCmd,
         )
         val binds = listOf(
-            "/storage",
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).absolutePath,
         )
 
         return executeCommand(path, args, binds, workDir.absolutePath)
@@ -159,6 +160,10 @@ class BuildEnvironment(
     fun executeGradle(gradleArgs: List<String>, projectPath: String, gradleBuildDir: String): CommandResult {
         val tmpDir = changeProject(projectPath, gradleBuildDir)
         val workDir = tmpDir.relativeTo(File(rootfs))
+
+        // @todo This runs gradle in place - I think we could probably hack proot until it works.
+        //val tmpDir = File(projectPath, gradleBuildDir)
+        //val workDir = tmpDir
 
         var result = executeGradleInternal(gradleArgs, workDir)
 

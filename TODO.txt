@@ -1,21 +1,22 @@
 TODO
 ====
 
-- Get Gradle build running to completion
-  - Detect and solve the AAPT thing
-- We should bind the whole shared Documents directory, not just the given project (so other stuff can be found)
-  - Or, just bind all of `/storage`?
-  - I wonder if this might fix our issues with `getcwd` not working in there?
 - Godot: Show better progress to the user
   - Popup the window and show output
     - Should we combine stdout and stderr? My inclination is "yes"
   - Have a way to cancel the build
     - We probably need to do better with threads?
   - Only return control to the user when the build has finished or been canceled
+  - Need the following messages (let's not do a "PREPARE_PROJECT" - it can just be baked in)
+    - EXECUTE_GRADLE
+    - CANCEL_COMMAND
+    - CLEAN_PROJECT
 - Godot: Clean up
   - Make separate class/object for the Gradle bits
   - Remove the old Termux bits
 - Figure out which Termux fork we need (and update build system to use it)
+- Build the Android SDK tools from source
+  - https://github.com/lzhiyong/android-sdk-tools
 
 Notes:
 
