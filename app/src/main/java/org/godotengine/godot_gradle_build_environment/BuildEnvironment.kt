@@ -227,13 +227,13 @@ class BuildEnvironment(
     }
 
     fun killCurrentProcess() {
-        if (currentProcess != null) {
-            currentProcess?.destroy()
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                currentProcess?.waitFor(500, TimeUnit.MILLISECONDS)
-                currentProcess?.destroyForcibly()
-            }
+        currentProcess?.let { process ->
             currentProcess = null
+            process.destroy()
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                process.waitFor(500, TimeUnit.MILLISECONDS)
+                process.destroyForcibly()
+            }
         }
     }
 
