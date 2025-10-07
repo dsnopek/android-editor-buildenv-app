@@ -1,12 +1,14 @@
 package org.godotengine.godot_gradle_build_environment
 
 import android.content.Context
+import android.os.Build
 import android.os.Environment
 import android.util.Log
 import java.io.BufferedReader
 import java.io.File
 import java.io.IOException
 import java.io.InputStreamReader
+import java.util.concurrent.TimeUnit
 
 class BuildEnvironment(
     private val context: Context,
@@ -25,6 +27,7 @@ class BuildEnvironment(
 
     private val defaultEnv: List<String>
     private var currentProjectPath: String = ""
+    private var currentProcess: Process? = null
 
     init {
         defaultEnv = try {
@@ -52,6 +55,11 @@ class BuildEnvironment(
         workDir: String,
         outputHandler: (Int, String) -> Unit,
     ): Int {
+        if (currentProcess != null) {
+            Log.e(TAG, "Cannot run a new process when there's already one running")
+            return 255
+        }
+
         val libDir = context.applicationInfo.nativeLibraryDir
         val proot = File(libDir, "libproot.so").absolutePath
 
@@ -95,16 +103,16 @@ class BuildEnvironment(
 
         Log.i(TAG, "Cmd: " + cmd.toString())
 
-        val process = ProcessBuilder(cmd).apply {
+        currentProcess = ProcessBuilder(cmd).apply {
             directory(context.filesDir)
             environment().putAll(env)
         }.start()
 
-        val stdoutThread = logAndCaptureStream(BufferedReader(InputStreamReader(process.inputStream)), { line ->
+        val stdoutThread = logAndCaptureStream(BufferedReader(InputStreamReader(currentProcess?.inputStream)), { line ->
             Log.i(STDOUT_TAG, line)
             outputHandler(OUTPUT_STDOUT, line)
         })
-        val stderrThread = logAndCaptureStream(BufferedReader(InputStreamReader(process.errorStream)), { line ->
+        val stderrThread = logAndCaptureStream(BufferedReader(InputStreamReader(currentProcess?.errorStream)), { line ->
             Log.i(STDERR_TAG, line)
             outputHandler(OUTPUT_STDERR, line)
         })
@@ -115,9 +123,10 @@ class BuildEnvironment(
         stdoutThread.join()
         stderrThread.join()
 
-        val exitCode = process.waitFor()
+        val exitCode = currentProcess?.waitFor() ?: 255
         Log.i(TAG, "ExitCode: " + exitCode.toString())
 
+        currentProcess = null
         return exitCode
     }
 
@@ -210,6 +219,17 @@ class BuildEnvironment(
         }
 
         return result
+    }
+
+    public fun killCurrentProcess() {
+        if (currentProcess != null) {
+            currentProcess?.destroy()
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                currentProcess?.waitFor(500, TimeUnit.MILLISECONDS)
+                currentProcess?.destroyForcibly()
+            }
+            currentProcess = null
+        }
     }
 
 }
