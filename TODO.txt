@@ -1,28 +1,9 @@
 TODO
 ====
 
-- Godot: Show better progress to the user
-  - Have a way to cancel the build
-    - We probably need to do better with threads?
-  - Only return control to the user when the build has finished or been canceled
-  - Need the following messages (let's not do a "PREPARE_PROJECT" - it can just be baked in)
-    - EXECUTE_GRADLE
-    - CANCEL_COMMAND
-    - CLEAN_PROJECT
-- Godot: Clean up
-  - Make separate class/object for the Gradle bits
-  - Remove the old Termux bits
-- Figure out which Termux fork we need (and update build system to use it)
-- Build the Android SDK tools from source
-  - https://github.com/lzhiyong/android-sdk-tools
 - Storing projects
   - We should have a "projects" directory under the app files (next to "rootfs")
   - We should bind it into the proot environment as `/projects`
   - We should name the directories after a hash of the full path the project came from
-
-Notes:
-
-- It looks like we need to copy the `android/build` directory into the rootfs for this to work
-- We should bind the whole shared Documents directory into the rootfs, so any output directory for the Gradle artifacts will work
-- I'm not sure if we still need green-green-avk's fork or can use the termux fork - I've gone back and forth too many times
-
+- Build the Android SDK tools from source
+  - https://github.com/lzhiyong/android-sdk-tools
