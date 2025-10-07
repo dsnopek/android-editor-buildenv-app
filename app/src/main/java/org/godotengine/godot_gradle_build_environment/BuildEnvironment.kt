@@ -40,10 +40,15 @@ class BuildEnvironment(
 
     private fun logAndCaptureStream(reader: BufferedReader, handler: (String) -> Unit): Thread {
         return Thread {
-            reader.useLines { lines ->
-                lines.forEach { line ->
-                    handler(line)
+            try {
+                reader.useLines { lines ->
+                    lines.forEach { line ->
+                        handler(line)
+                    }
                 }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error reading stream: ${e.message}");
+                return@Thread
             }
         }
     }
@@ -233,6 +238,7 @@ class BuildEnvironment(
     }
 
     fun cleanProject(projectPath: String, gradleBuildDir: String) {
+        Log.d(TAG, "TODO Clean project!")
         // @todo Copy everything in the tmp dir back to the original location
         // @todo Delete the temp dir
     }
