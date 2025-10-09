@@ -153,7 +153,9 @@ class BuildEnvironment(
         val workDir = File(projectRoot, hash)
 
         if (workDir.exists()) {
-            FileUtils.tryCopyDirectory(workDir, fullPath)
+            // @todo Bring the copy back! Right now this is giving a permission error, but it would
+            //       make build times on subsequent runs much faster!
+            //FileUtils.tryCopyDirectory(workDir, fullPath)
             workDir.deleteRecursively()
         }
     }
