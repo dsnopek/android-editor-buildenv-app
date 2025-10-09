@@ -42,7 +42,7 @@ object FileUtils {
                     }
                 } else {
                     if (!tryCopyFile(source, target)) {
-                        return false
+                        success = false
                     }
                 }
             } catch (e: IOException) {

@@ -195,19 +195,26 @@ class BuildEnvironment(
         //val workDir = tmpDir
 
         val stderrBuilder = StringBuilder()
-
-        var result = executeGradleInternal(gradleArgs, workDir, { type, line ->
+        val captureOutputHandler: (Int, String) -> Unit = { type, line ->
             if (type == OUTPUT_STDERR) {
                 synchronized(stderrBuilder) {
                     stderrBuilder.appendLine(line)
                 }
             }
             outputHandler(type, line)
-        })
+        }
+
+        var result = executeGradleInternal(gradleArgs, workDir, captureOutputHandler)
+
+        val stderr = stderrBuilder.toString()
+        if (result == 0 && stderr.contains("BUILD FAILED")) {
+            // Sometimes Gradle builds fail, but it still gives an exit code of 0.
+            result = 1;
+        }
+        stderrBuilder.clear()
 
         // Detect if we hit the AAPT2 issue.
-        val stderr = stderrBuilder.toString()
-        if (stderr.contains("BUILD FAILED") && stderr.contains(Regex("""AAPT2 aapt2.*Daemon startup failed"""))) {
+        if (result != 0 && stderr.contains(Regex("""AAPT2 aapt2.*Daemon startup failed"""))) {
             outputHandler(OUTPUT_INFO, "> Detected AAPT2 issue - attempting to patch the JAR files...")
             // Update the JAR files to include the aapt2 that is bundled in the rootfs.
             findAapt2Jars(workDir).forEach { jarFile ->
@@ -226,7 +233,11 @@ class BuildEnvironment(
 
             // Now, try the running Gradle again!
             outputHandler(OUTPUT_INFO, "> Retrying Gradle build...")
-            result = executeGradleInternal(gradleArgs, workDir, outputHandler)
+            result = executeGradleInternal(gradleArgs, workDir, captureOutputHandler)
+            val stderr = stderrBuilder.toString()
+            if (result == 0 && stderr.contains("BUILD FAILED")) {
+                result = 1;
+            }
         }
 
         return result
