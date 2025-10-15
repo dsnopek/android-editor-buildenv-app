@@ -18,7 +18,7 @@ docker build "$ALPINE_ANDROID_DIR/docker" --platform=$PLATFORM -f "$ALPINE_ANDRO
 	--build-arg="JDK_VERSION=17" --build-arg="BUILD_TOOLS=35.0.0" --build-arg="TARGET_SDK=35"
 
 docker build "$SCRIPT_DIR" --platform=$PLATFORM -f "$SCRIPT_DIR/Dockerfile.godot" -t $IMAGE_NAME \
-	--build-arg="JDK_VERSION=17" --build-arg="BUILD_TOOLS=35.0.0" --build-arg="TARGET_SDK=35" --build-arg="ANDROID_SOURCE=$ANDROID_SOURCE"
+	--build-arg="JDK_VERSION=17" --build-arg="BUILD_TOOLS=35.0.0" --build-arg="TARGET_SDK=35"
 
 CONTAINER_ID=$(docker create --platform=$PLATFORM $IMAGE_NAME)
 docker export --output="$OUTPUT_DIR/alpine-android-35-jdk17.tar" $CONTAINER_ID
