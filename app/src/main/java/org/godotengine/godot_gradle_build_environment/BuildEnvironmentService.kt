@@ -40,8 +40,8 @@ class BuildEnvironmentService : Service() {
     override fun onCreate() {
         super.onCreate()
 
-        val rootfs = File(filesDir, "rootfs/alpine-android-35-jdk17").absolutePath
-        val projectDir = File(filesDir, "projects").absolutePath
+        val rootfs = AppPaths.getRootfs(this).absolutePath
+        val projectDir = AppPaths.getProjectDir(this).absolutePath
         mBuildEnvironment = BuildEnvironment(this, rootfs, projectDir)
 
         mWorkThread = HandlerThread("BuildEnvironmentServiceWorker")

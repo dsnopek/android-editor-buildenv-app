@@ -189,10 +189,19 @@ class BuildEnvironment(
         return executeCommand(path, args, binds, "/project", outputHandler)
     }
 
+    private fun isRootfsReady(): Boolean {
+        return AppPaths.getRootfsReadyFile(File(rootfs)).exists()
+    }
+
     fun executeGradle(gradleArgs: List<String>, projectPath: String, gradleBuildDir: String, outputHandler: (Int, String) -> Unit): Int {
+        if (!isRootfsReady()) {
+            outputHandler(OUTPUT_STDERR, "Rootfs isn't installed. Install it in the Godot Gradle Build Environment app.")
+            return 255;
+        }
+
         val workDir = setupProject(projectPath, gradleBuildDir)
 
-        // @todo This runs gradle in place - I think we could probably hack proot until it works.
+        // @todo This runs gradle in place - I think we could maybe hack proot until it works?
         //val tmpDir = File(projectPath, gradleBuildDir)
         //val workDir = tmpDir
 
