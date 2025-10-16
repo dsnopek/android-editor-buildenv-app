@@ -34,7 +34,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <!-- No permission given because we'll only let the Godot editor talk to us. -->
         <service
             android:name=".BuildEnvironmentService"
             android:exported="true">

@@ -1,6 +1,7 @@
 TODO
 ====
 
-- Build the Android SDK tools from source
-  - https://github.com/lzhiyong/android-sdk-tools
-- Check that Godot (and only Godot) is connecting to the service
+- Fix build the Android SDK tools from source
+  - I think we might need to build against an Alpine rootfs so that we don't link against the
+    Android dynamic linker and system libraries like libc, libm and libz
+- Add some security to the service so that only Godot can connect to it?

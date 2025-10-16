@@ -4,4 +4,6 @@
     <string name="delete_rootfs_button">Delete Rootfs</string>
     <string name="installing_rootfs_message">Installing rootfs...\nThis may take several minutes.</string>
     <string name="deleting_rootfs_message">Deleting rootfs...</string>
+    <string name="missing_rootfs_message">Rootfs is not installed!\nYou will not be able to do an Gradle builds until you install it.</string>
+    <string name="rootfs_ready_message">Rootfs appears to be installed!</string>
 </resources>
