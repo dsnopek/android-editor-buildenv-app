@@ -13,19 +13,28 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.godotengine.godot_gradle_build_environment.AppPaths
 import org.godotengine.godot_gradle_build_environment.CachedProject
+import org.godotengine.godot_gradle_build_environment.FileUtils
 import org.godotengine.godot_gradle_build_environment.ProjectInfo
 
 @Composable
 fun ProjectsScreen(modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val projects = remember { loadCachedProjects(context) }
+    val sizeCache = remember { mutableStateMapOf<String, Long>() }
 
     Column(
         modifier = modifier
@@ -55,7 +64,7 @@ fun ProjectsScreen(modifier: Modifier = Modifier) {
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(projects) { project ->
-                    ProjectItem(project)
+                    ProjectItem(project, sizeCache)
                 }
             }
         }
@@ -63,7 +72,28 @@ fun ProjectsScreen(modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun ProjectItem(project: CachedProject) {
+private fun ProjectItem(
+    project: CachedProject,
+    sizeCache: MutableMap<String, Long>
+) {
+    val cacheKey = project.cacheDirectory.absolutePath
+    var sizeText by remember { mutableStateOf<String?>(null) }
+
+    // Load size asynchronously and cache it
+    LaunchedEffect(cacheKey) {
+        val cachedSize = sizeCache[cacheKey]
+        if (cachedSize != null) {
+            sizeText = FileUtils.formatSize(cachedSize)
+        } else {
+            // Calculate size in background thread
+            val size = withContext(Dispatchers.IO) {
+                FileUtils.calculateDirectorySize(project.cacheDirectory)
+            }
+            sizeCache[cacheKey] = size
+            sizeText = FileUtils.formatSize(size)
+        }
+    }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -83,6 +113,12 @@ private fun ProjectItem(project: CachedProject) {
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = 4.dp)
+            )
+            Text(
+                text = sizeText ?: "Calculating...",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 2.dp)
             )
         }
     }
