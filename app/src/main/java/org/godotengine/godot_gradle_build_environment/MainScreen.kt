@@ -40,6 +40,7 @@ fun MainScreen(
     rootfs: File,
     rootfsReadyFile: File,
     extractRootfs: () -> Unit,
+    settingsManager: SettingsManager,
 ) {
     val initialTab = if (rootfsReadyFile.exists()) AppTab.PROJECTS else AppTab.ROOTFS
     var selectedTab by remember { mutableStateOf(initialTab) }
@@ -74,6 +75,7 @@ fun MainScreen(
                 modifier = Modifier.padding(innerPadding)
             )
             AppTab.SETTINGS -> SettingsScreen(
+                settingsManager = settingsManager,
                 modifier = Modifier.padding(innerPadding)
             )
         }

@@ -62,6 +62,7 @@ class MainActivity : ComponentActivity() {
                     AppPaths.getRootfs(this),
                     AppPaths.getRootfsReadyFile(this),
                     { extractRootfs() },
+                    SettingsManager(this),
                 )
             }
         }
