@@ -28,6 +28,7 @@ class BuildEnvironmentService : Service() {
 
     private lateinit var mMessenger: Messenger
     private lateinit var mBuildEnvironment: BuildEnvironment
+    private lateinit var mSettingsManager: SettingsManager
     private lateinit var mWorkThread: HandlerThread
     private lateinit var mWorkHandler: Handler
 
@@ -43,6 +44,7 @@ class BuildEnvironmentService : Service() {
         val rootfs = AppPaths.getRootfs(this).absolutePath
         val projectDir = AppPaths.getProjectDir(this).absolutePath
         mBuildEnvironment = BuildEnvironment(this, rootfs, projectDir)
+        mSettingsManager = SettingsManager(this)
 
         mWorkThread = HandlerThread("BuildEnvironmentServiceWorker")
         mWorkThread.start()
@@ -160,7 +162,7 @@ class BuildEnvironmentService : Service() {
         val projectPath = data.getString("project_path")
         val gradleBuildDir = data.getString("gradle_build_directory")
 
-        if (projectPath != null && gradleBuildDir != null) {
+        if (projectPath != null && gradleBuildDir != null && mSettingsManager.clearCacheAfterBuild) {
             mBuildEnvironment.cleanProject(projectPath, gradleBuildDir)
         }
 
