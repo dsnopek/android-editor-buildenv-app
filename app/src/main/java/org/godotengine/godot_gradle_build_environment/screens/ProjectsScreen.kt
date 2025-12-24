@@ -24,6 +24,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -58,6 +59,8 @@ fun ProjectsScreen(modifier: Modifier = Modifier) {
     var projects by remember { mutableStateOf(loadCachedProjects(context)) }
     val sizeCache = remember { mutableStateMapOf<String, Long>() }
     val deletingProjects = remember { mutableStateListOf<String>() }
+    val refreshingProjects = remember { mutableStateListOf<String>() }
+    val refreshTriggers = remember { mutableStateMapOf<String, Int>() }
     var serviceMessenger by remember { mutableStateOf<Messenger?>(null) }
     var replyMessenger by remember { mutableStateOf<Messenger?>(null) }
 
@@ -124,10 +127,21 @@ fun ProjectsScreen(modifier: Modifier = Modifier) {
                     ProjectItem(
                         project = project,
                         sizeCache = sizeCache,
+                        refreshTrigger = refreshTriggers[project.cacheDirectory.absolutePath] ?: 0,
                         isDeleting = deletingProjects.contains(project.cacheDirectory.absolutePath),
+                        isRefreshing = refreshingProjects.contains(project.cacheDirectory.absolutePath),
                         onDelete = {
                             deletingProjects.add(project.cacheDirectory.absolutePath)
                             deleteProject(serviceMessenger, replyMessenger, project)
+                        },
+                        onRefresh = {
+                            val path = project.cacheDirectory.absolutePath
+                            refreshingProjects.add(path)
+                            sizeCache.remove(path)
+                            refreshTriggers[path] = (refreshTriggers[path] ?: 0) + 1
+                        },
+                        onRefreshComplete = {
+                            refreshingProjects.remove(project.cacheDirectory.absolutePath)
                         }
                     )
                 }
@@ -163,17 +177,22 @@ private fun deleteProject(
 private fun ProjectItem(
     project: CachedProject,
     sizeCache: MutableMap<String, Long>,
+    refreshTrigger: Int,
     isDeleting: Boolean,
-    onDelete: () -> Unit
+    isRefreshing: Boolean,
+    onDelete: () -> Unit,
+    onRefresh: () -> Unit,
+    onRefreshComplete: () -> Unit
 ) {
     val cacheKey = project.cacheDirectory.absolutePath
     var sizeText by remember { mutableStateOf<String?>(null) }
 
     // Load size asynchronously and cache it
-    LaunchedEffect(cacheKey) {
+    LaunchedEffect(cacheKey, refreshTrigger) {
         val cachedSize = sizeCache[cacheKey]
         if (cachedSize != null) {
             sizeText = FileUtils.formatSize(cachedSize)
+            onRefreshComplete()
         } else {
             // Calculate size in background thread
             val size = withContext(Dispatchers.IO) {
@@ -181,6 +200,7 @@ private fun ProjectItem(
             }
             sizeCache[cacheKey] = size
             sizeText = FileUtils.formatSize(size)
+            onRefreshComplete()
         }
     }
 
@@ -219,18 +239,38 @@ private fun ProjectItem(
 
             Spacer(modifier = Modifier.width(8.dp))
 
-            if (isDeleting) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(24.dp),
-                    strokeWidth = 2.dp
-                )
-            } else {
-                IconButton(onClick = onDelete) {
-                    Icon(
-                        imageVector = Icons.Filled.Delete,
-                        contentDescription = "Delete project cache",
-                        tint = MaterialTheme.colorScheme.error
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (isRefreshing) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        strokeWidth = 2.dp
                     )
+                } else {
+                    IconButton(onClick = onRefresh) {
+                        Icon(
+                            imageVector = Icons.Filled.Refresh,
+                            contentDescription = "Refresh size",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+
+                if (isDeleting) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    IconButton(onClick = onDelete) {
+                        Icon(
+                            imageVector = Icons.Filled.Delete,
+                            contentDescription = "Delete project cache",
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                    }
                 }
             }
         }
