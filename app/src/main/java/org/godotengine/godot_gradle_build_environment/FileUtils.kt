@@ -1,5 +1,6 @@
 package org.godotengine.godot_gradle_build_environment
 
+import android.os.Build
 import android.util.Log
 import java.io.File
 import java.io.FileInputStream
@@ -70,8 +71,10 @@ object FileUtils {
         val files = directory.listFiles() ?: return 0L
 
         for (file in files) {
-            if (Files.isSymbolicLink(file.toPath())) {
-                continue
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                if (Files.isSymbolicLink(file.toPath())) {
+                    continue
+                }
             }
 
             size += if (file.isDirectory) {
