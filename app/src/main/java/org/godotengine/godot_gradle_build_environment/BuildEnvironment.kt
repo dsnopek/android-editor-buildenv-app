@@ -141,10 +141,24 @@ class BuildEnvironment(
         val hash = Integer.toHexString(fullPath.absolutePath.hashCode())
         val workDir = File(projectRoot, hash)
 
-        if (!workDir.exists()) {
-            FileUtils.tryCopyDirectory(fullPath, workDir)
-            ProjectInfo.writeToDirectory(workDir, projectPath, gradleBuildDir)
+        // Clean up assets from a previous export.
+        if (workDir.exists()) {
+            val aabAssetsDir = File(workDir, "assetPackInstallTime/src/main/assets")
+            if (aabAssetsDir.exists()) {
+                aabAssetsDir.deleteRecursively()
+            }
+
+            val apkAssetsDir = File(workDir, "src/main/assets")
+            if (apkAssetsDir.exists()) {
+                apkAssetsDir.deleteRecursively()
+            }
         }
+
+        if (!FileUtils.tryCopyDirectory(fullPath, workDir)) {
+            throw IOException("Failed to copy $fullPath to $workDir")
+        }
+
+        ProjectInfo.writeToDirectory(workDir, projectPath, gradleBuildDir)
 
         return workDir
     }
@@ -155,9 +169,6 @@ class BuildEnvironment(
         val workDir = File(projectRoot, hash)
 
         if (workDir.exists()) {
-            // @todo Bring the copy back! Right now this is giving a permission error, but it would
-            //       make build times on subsequent runs much faster!
-            //FileUtils.tryCopyDirectory(workDir, fullPath)
             workDir.deleteRecursively()
         }
     }
@@ -198,14 +209,15 @@ class BuildEnvironment(
     fun executeGradle(gradleArgs: List<String>, projectPath: String, gradleBuildDir: String, outputHandler: (Int, String) -> Unit): Int {
         if (!isRootfsReady()) {
             outputHandler(OUTPUT_STDERR, "Rootfs isn't installed. Install it in the Godot Gradle Build Environment app.")
-            return 255;
+            return 255
         }
 
-        val workDir = setupProject(projectPath, gradleBuildDir)
-
-        // @todo This runs gradle in place - I think we could maybe hack proot until it works?
-        //val tmpDir = File(projectPath, gradleBuildDir)
-        //val workDir = tmpDir
+        val workDir = try {
+            setupProject(projectPath, gradleBuildDir)
+        } catch (e: Exception) {
+            outputHandler(OUTPUT_STDERR, "Unable to setup project: ${e.message}")
+            return 255
+        }
 
         val stderrBuilder = StringBuilder()
         val captureOutputHandler: (Int, String) -> Unit = { type, line ->
