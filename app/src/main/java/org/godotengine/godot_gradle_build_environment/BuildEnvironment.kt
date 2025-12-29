@@ -143,14 +143,14 @@ class BuildEnvironment(
 
         // Clean up assets from a previous export.
         if (workDir.exists()) {
-            val aabAssetsDir = File(workDir, "assetPackInstallTime/src/main/assets")
-            if (aabAssetsDir.exists()) {
-                aabAssetsDir.deleteRecursively()
-            }
-
             val apkAssetsDir = File(workDir, "src/main/assets")
             if (apkAssetsDir.exists()) {
                 apkAssetsDir.deleteRecursively()
+            }
+
+            val aabAssetsDir = File(workDir, "assetPackInstallTime/src/main/assets")
+            if (aabAssetsDir.exists()) {
+                aabAssetsDir.deleteRecursively()
             }
         }
 
