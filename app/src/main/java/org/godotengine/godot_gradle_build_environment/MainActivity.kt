@@ -59,6 +59,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             GodotGradleBuildEnvironmentTheme {
                 MainScreen(
+                    this,
                     AppPaths.getRootfs(this),
                     AppPaths.getRootfsReadyFile(this),
                     { extractRootfs() },

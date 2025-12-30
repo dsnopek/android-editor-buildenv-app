@@ -172,6 +172,13 @@ class BuildEnvironment(
         }
     }
 
+    fun cleanGlobalCache() {
+        val gradleCache = AppPaths.getGlobalGradleCache(context)
+        if (gradleCache.exists()) {
+            gradleCache.deleteRecursively()
+        }
+    }
+
     private fun findAapt2Jars(root: File): List<File> {
         val regex = Regex("""aapt2-.*-linux\.jar""")
         return root.walkTopDown()

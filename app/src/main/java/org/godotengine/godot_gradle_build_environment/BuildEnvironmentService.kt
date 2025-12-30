@@ -24,6 +24,7 @@ class BuildEnvironmentService : Service() {
         const val MSG_COMMAND_OUTPUT = 3
         const val MSG_CANCEL_COMMAND = 4
         const val MSG_CLEAN_PROJECT = 5
+        const val MSG_CLEAN_GLOBAL_CACHE = 6
     }
 
     private lateinit var mMessenger: Messenger
@@ -60,6 +61,7 @@ class BuildEnvironmentService : Service() {
                     Companion.MSG_EXECUTE_GRADLE -> queueWork(WorkItem(copy, msg.arg1))
                     Companion.MSG_CANCEL_COMMAND -> cancelWork(msg.arg1)
                     Companion.MSG_CLEAN_PROJECT -> queueWork(WorkItem(copy, msg.arg1))
+                    Companion.MSG_CLEAN_GLOBAL_CACHE -> queueWork(WorkItem(copy, msg.arg1))
                 }
             }
         }
@@ -117,6 +119,7 @@ class BuildEnvironmentService : Service() {
             when (msg.what) {
                 Companion.MSG_EXECUTE_GRADLE -> executeGradle(msg)
                 Companion.MSG_CLEAN_PROJECT -> cleanProject(msg)
+                Companion.MSG_CLEAN_GLOBAL_CACHE -> cleanGlobalCache(msg)
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error handling message: ${e.message}")
@@ -166,6 +169,17 @@ class BuildEnvironmentService : Service() {
         if (projectPath != null && gradleBuildDir != null && (forceClean || mSettingsManager.clearCacheAfterBuild)) {
             mBuildEnvironment.cleanProject(projectPath, gradleBuildDir)
         }
+
+        val reply = Message.obtain(null, Companion.MSG_COMMAND_RESULT, msg.arg1, 0)
+        try {
+            msg.replyTo.send(reply)
+        } catch (e: RemoteException) {
+            Log.e(TAG, "Error sending result to client: ${e.message}")
+        }
+    }
+
+    private fun cleanGlobalCache(msg: Message) {
+        mBuildEnvironment.cleanGlobalCache()
 
         val reply = Message.obtain(null, Companion.MSG_COMMAND_RESULT, msg.arg1, 0)
         try {

@@ -1,5 +1,6 @@
 package org.godotengine.godot_gradle_build_environment
 
+import android.content.Context
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Build
@@ -37,6 +38,7 @@ enum class AppTab(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
+    context: Context,
     rootfs: File,
     rootfsReadyFile: File,
     extractRootfs: () -> Unit,
@@ -75,6 +77,7 @@ fun MainScreen(
                 modifier = Modifier.padding(innerPadding)
             )
             AppTab.SETTINGS -> SettingsScreen(
+                context = context,
                 settingsManager = settingsManager,
                 modifier = Modifier.padding(innerPadding)
             )
