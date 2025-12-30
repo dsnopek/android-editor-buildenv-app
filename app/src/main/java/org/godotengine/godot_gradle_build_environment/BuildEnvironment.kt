@@ -68,7 +68,7 @@ class BuildEnvironment(
         val libDir = context.applicationInfo.nativeLibraryDir
         val proot = File(libDir, "libproot.so").absolutePath
 
-        val prootTmpDir = File(context.filesDir, "proot-tmp")
+        val prootTmpDir = AppPaths.getProotTmpDir(context)
         prootTmpDir.mkdirs()
 
         val env = HashMap(System.getenv())
