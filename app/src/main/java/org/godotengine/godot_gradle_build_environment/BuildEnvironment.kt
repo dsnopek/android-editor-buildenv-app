@@ -101,7 +101,7 @@ class BuildEnvironment(
                 )
             )
             addAll(defaultEnv)
-            //add("HOME=/root")
+            add("HOME=/home/android")
             add("GRADLE_OPTS=-Djava.io.tmpdir=/alt-tmp")
             add(path)
             addAll(args)
@@ -181,12 +181,16 @@ class BuildEnvironment(
     }
 
     private fun executeGradleInternal(gradleArgs: List<String>, workDir: File, outputHandler: (Int, String) -> Unit): Int {
+        val gradleCache = AppPaths.getGlobalGradleCache(context)
+        gradleCache.mkdirs()
+
         val gradleCmd = buildString {
             append("bash gradlew ")
             append(gradleArgs.joinToString(" ") { "\"$it\""})
             if ("--no-daemon" !in gradleArgs) {
                 append(" --no-daemon")
             }
+            append(" --gradle-user-home /global-gradle-cache")
         }
 
         val path = "/bin/bash"
@@ -197,6 +201,7 @@ class BuildEnvironment(
         val binds = listOf(
             Environment.getExternalStorageDirectory().absolutePath,
             "${workDir.absolutePath}:/project",
+            "${gradleCache.absolutePath}:/global-gradle-cache",
         )
 
         return executeCommand(path, args, binds, "/project", outputHandler)
