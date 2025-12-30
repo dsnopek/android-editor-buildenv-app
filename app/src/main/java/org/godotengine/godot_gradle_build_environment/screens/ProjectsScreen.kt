@@ -102,7 +102,7 @@ fun ProjectsScreen(modifier: Modifier = Modifier) {
             .padding(16.dp),
     ) {
         Text(
-            text = "Projects",
+            text = "Project Caches",
             style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier.padding(bottom = 16.dp)
         )
@@ -114,7 +114,7 @@ fun ProjectsScreen(modifier: Modifier = Modifier) {
                 verticalArrangement = Arrangement.Center,
             ) {
                 Text(
-                    text = "No cached projects",
+                    text = "No project caches",
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
