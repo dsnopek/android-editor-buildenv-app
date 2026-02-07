@@ -22,9 +22,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -44,7 +41,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -53,6 +52,7 @@ import org.godotengine.godot_gradle_build_environment.BuildEnvironmentService
 import org.godotengine.godot_gradle_build_environment.CachedProject
 import org.godotengine.godot_gradle_build_environment.FileUtils
 import org.godotengine.godot_gradle_build_environment.ProjectInfo
+import org.godotengine.godot_gradle_build_environment.R
 
 @Composable
 fun ProjectsScreen(modifier: Modifier = Modifier) {
@@ -253,7 +253,7 @@ private fun ProjectItem(
                 } else {
                     IconButton(onClick = onRefresh) {
                         Icon(
-                            imageVector = Icons.Filled.Refresh,
+                            imageVector = ImageVector.vectorResource(R.drawable.icon_refresh),
                             contentDescription = "Refresh size",
                             tint = MaterialTheme.colorScheme.primary
                         )
@@ -268,7 +268,7 @@ private fun ProjectItem(
                 } else {
                     IconButton(onClick = onDelete) {
                         Icon(
-                            imageVector = Icons.Filled.Delete,
+                            imageVector = ImageVector.vectorResource(R.drawable.icon_delete),
                             contentDescription = "Delete project cache",
                             tint = MaterialTheme.colorScheme.error
                         )

@@ -19,7 +19,7 @@ jobs:
       - name: Set up Android NDK
         uses: nttld/setup-ndk@v1
         with:
-          ndk-version: r28b
+          ndk-version: r29
 
       - name: Build proot
         run: |
@@ -40,25 +40,15 @@ jobs:
         run: |
           echo "${{ secrets.KEYSTORE }}" | base64 -d > /tmp/release.keystore
 
-      - name: Build release APK
+      - name: Build release APK and AAB
         if: github.ref == 'refs/heads/main'
         env:
           GABE_RELEASE_KEYSTORE_FILE: /tmp/release.keystore
-          GABE_RELEASE_SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
+          GABE_RELEASE_STORE_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
           GABE_RELEASE_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           GABE_RELEASE_KEY_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
         run: |
-          ./gradlew assembleRelease
-
-      - name: Build release AAB
-        if: github.ref == 'refs/heads/main'
-        env:
-          GABE_RELEASE_KEYSTORE_FILE: /tmp/release.keystore
-          GABE_RELEASE_SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
-          GABE_RELEASE_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          GABE_RELEASE_KEY_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
-        run: |
-          ./gradlew bundleRelease
+          ./gradlew assembleRelease bundleRelease
 
       - name: Upload debug artifacts
         uses: actions/upload-artifact@v4

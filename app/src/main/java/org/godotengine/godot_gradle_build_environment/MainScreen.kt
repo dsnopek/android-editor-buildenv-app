@@ -1,11 +1,8 @@
 package org.godotengine.godot_gradle_build_environment
 
 import android.content.Context
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Build
-import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -22,6 +19,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import org.godotengine.godot_gradle_build_environment.screens.ProjectsScreen
 import org.godotengine.godot_gradle_build_environment.screens.RootfsScreen
 import org.godotengine.godot_gradle_build_environment.screens.SettingsScreen
@@ -29,11 +27,11 @@ import java.io.File
 
 enum class AppTab(
     val label: String,
-    val icon: ImageVector
+    @DrawableRes val icon: Int
 ) {
-    PROJECTS("Projects", Icons.Filled.List),
-    ROOTFS("Rootfs", Icons.Filled.Build),
-    SETTINGS("Settings", Icons.Filled.Settings),
+    PROJECTS("Projects", R.drawable.icon_projects_tab),
+    ROOTFS("Rootfs", R.drawable.icon_rootfs_tab),
+    SETTINGS("Settings", R.drawable.icon_settings),
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -59,7 +57,7 @@ fun MainScreen(
             NavigationBar {
                 AppTab.entries.forEach { tab ->
                     NavigationBarItem(
-                        icon = { Icon(tab.icon, contentDescription = tab.label) },
+                        icon = { Icon(ImageVector.vectorResource(tab.icon), contentDescription = tab.label) },
                         label = { Text(tab.label) },
                         selected = selectedTab == tab,
                         onClick = { selectedTab = tab }
