@@ -19,8 +19,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -42,12 +40,16 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.godotengine.godot_gradle_build_environment.AppPaths
 import org.godotengine.godot_gradle_build_environment.BuildEnvironmentService
 import org.godotengine.godot_gradle_build_environment.FileUtils
+import org.godotengine.godot_gradle_build_environment.R
 import org.godotengine.godot_gradle_build_environment.SettingsManager
 
 @Composable
@@ -201,7 +203,7 @@ fun SettingsScreen(
                         } else {
                             IconButton(onClick = { onRefresh() }) {
                                 Icon(
-                                    imageVector = Icons.Filled.Refresh,
+                                    imageVector = ImageVector.vectorResource(R.drawable.icon_refresh),
                                     contentDescription = "Refresh cache size",
                                     tint = MaterialTheme.colorScheme.primary
                                 )
