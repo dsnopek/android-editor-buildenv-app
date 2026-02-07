@@ -13,17 +13,13 @@ import kotlin.math.pow
 
 object FileUtils {
 
-    private const val TAG = "FileUtils"
+    private val TAG = FileUtils::class.java.simpleName
 
     fun tryCopyFile(source: File, dest: File): Boolean {
         try {
-            FileInputStream(source).use { input ->
-                FileOutputStream(dest).use { output ->
-                    input.copyTo(output)
-                }
-            }
-        } catch (e: IOException) {
-            Log.e(TAG, "Failed to copy ${source.absolutePath} to ${dest.absolutePath}: ${e.message}")
+            source.copyTo(dest)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to copy ${source.absolutePath} to ${dest.absolutePath}: ${e.message}", e)
             return false
         }
         return true
@@ -35,28 +31,13 @@ object FileUtils {
             return false
         }
 
-        var success = true
-        sourceDir.walkTopDown().forEach { source ->
-            val relativePath = source.relativeTo(sourceDir)
-            val target = File(destDir, relativePath.path)
-
-            try {
-                if (source.isDirectory) {
-                    if (!target.exists()) {
-                        target.mkdirs()
-                    }
-                } else {
-                    if (!tryCopyFile(source, target)) {
-                        success = false
-                    }
-                }
-            } catch (e: IOException) {
-                Log.e(TAG, "Failed to copy ${source.absolutePath} -> ${target.absolutePath}: ${e.message}")
-                success = false
-            }
+        try {
+            sourceDir.copyRecursively(destDir)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to copy ${sourceDir.absolutePath} -> ${destDir.absolutePath}: ${e.message}", e)
+            return false
         }
-
-        return success
+        return true
     }
 
     /**

@@ -11,13 +11,12 @@ import android.os.Message
 import android.os.Messenger
 import android.os.RemoteException
 import android.util.Log
-import java.io.File
-import java.util.LinkedList
+import java.util.concurrent.LinkedBlockingQueue
 
 class BuildEnvironmentService : Service() {
 
     companion object {
-        private const val TAG = "BuildEnvironmentService"
+        private val TAG = BuildEnvironmentService::class.java.simpleName
 
         const val MSG_EXECUTE_GRADLE = 1
         const val MSG_COMMAND_RESULT = 2
@@ -30,28 +29,25 @@ class BuildEnvironmentService : Service() {
     }
 
     private lateinit var mMessenger: Messenger
-    private lateinit var mBuildEnvironment: BuildEnvironment
-    private lateinit var mSettingsManager: SettingsManager
-    private lateinit var mWorkThread: HandlerThread
-    private lateinit var mWorkHandler: Handler
+    private val mBuildEnvironment: BuildEnvironment by lazy {
+        BuildEnvironment(
+            applicationContext,
+            AppPaths.getRootfs(applicationContext).absolutePath,
+            AppPaths.getProjectDir(applicationContext).absolutePath
+        )
+    }
+    private val mSettingsManager: SettingsManager by lazy { SettingsManager(applicationContext)}
+    private val mWorkThread = HandlerThread("BuildEnvironmentServiceWorker")
+    private val mWorkHandler: Handler by lazy { Handler(mWorkThread.looper) }
 
-    internal class WorkItem(public val msg: Message, public val id: Int)
-    private val queue = LinkedList<WorkItem>()
+    internal data class WorkItem(val msg: Message, val id: Int)
+    private val queue = LinkedBlockingQueue<WorkItem>()
     private var currentItem: WorkItem? = null
-
-    private val lock = Object()
 
     override fun onCreate() {
         super.onCreate()
 
-        val rootfs = AppPaths.getRootfs(this).absolutePath
-        val projectDir = AppPaths.getProjectDir(this).absolutePath
-        mBuildEnvironment = BuildEnvironment(this, rootfs, projectDir)
-        mSettingsManager = SettingsManager(this)
-
-        mWorkThread = HandlerThread("BuildEnvironmentServiceWorker")
         mWorkThread.start()
-        mWorkHandler = Handler(mWorkThread.looper)
 
         val incomingHandler = object : Handler(Looper.getMainLooper()) {
             override fun handleMessage(msg: Message) {
@@ -83,10 +79,7 @@ class BuildEnvironmentService : Service() {
     override fun onBind(intent: Intent?): IBinder? = mMessenger.binder
 
     private fun queueWork(item: WorkItem) {
-        synchronized(lock) {
-            queue.add(item)
-            lock.notifyAll()
-        }
+        queue.put(item)
     }
 
     private fun cancelWork(id: Int) {
@@ -97,20 +90,15 @@ class BuildEnvironmentService : Service() {
 
         Log.i(TAG, "Canceling command: ${id}")
 
-        synchronized(lock) {
-            if (currentItem?.id == id && currentItem?.msg?.what == MSG_EXECUTE_GRADLE) {
-                mBuildEnvironment.killCurrentProcess()
-            }
-            queue.removeAll { it.id == id && it.msg.what == MSG_EXECUTE_GRADLE }
+        if (currentItem?.id == id && currentItem?.msg?.what == MSG_EXECUTE_GRADLE) {
+            mBuildEnvironment.killCurrentProcess()
         }
+        queue.removeAll { it.id == id && it.msg.what == MSG_EXECUTE_GRADLE }
     }
 
     private fun workerLoop() {
         while (true) {
-            val work: WorkItem = synchronized(lock) {
-                while (queue.isEmpty()) lock.wait()
-                queue.removeFirst()
-            }
+            val work: WorkItem = queue.take()
 
             currentItem = work
             handleMessage(work.msg)

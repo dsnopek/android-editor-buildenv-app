@@ -18,9 +18,9 @@ class BuildEnvironment(
 ) {
 
     companion object {
-        private const val TAG = "BuildEnvironment"
-        private const val STDOUT_TAG = "BuildEnvironment-Stdout"
-        private const val STDERR_TAG = "BuildEnvironment-Stderr"
+        private val TAG = BuildEnvironment::class.java.simpleName
+        private val STDOUT_TAG = "$TAG-Stdout"
+        private val STDERR_TAG = "$TAG-Stderr"
 
         const val OUTPUT_INFO = 0;
         const val OUTPUT_STDOUT = 1;
@@ -41,7 +41,7 @@ class BuildEnvironment(
             File(rootfs, "env").readLines()
         } catch (e: IOException) {
             Log.i(TAG, "Unable to read default environment from $rootfs/env: $e")
-            emptyList<String>()
+            emptyList()
         }
     }
 
@@ -147,7 +147,7 @@ class BuildEnvironment(
         stderrThread.join()
 
         val exitCode = currentProcess?.waitFor() ?: 255
-        Log.i(TAG, "ExitCode: " + exitCode.toString())
+        Log.i(TAG, "ExitCode: $exitCode")
 
         currentProcess = null
         return exitCode
